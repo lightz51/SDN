@@ -7,7 +7,7 @@ from mininet.net import Mininet
 from mininet.log import setLogLevel
 from mininet.cli import CLI
 from mininet.node import RemoteController
-import requests
+import urllib2
 
 # Define custom topology
 class CustomTopology(Topo):
@@ -35,23 +35,23 @@ class CustomTopology(Topo):
 # Function to capture network topology from Ryu controller
 def capture_topology():
     topology_url = 'http://localhost:8080/v1.0/topology/switches'
-    response = requests.get(topology_url)
-    topology_data = response.json()
+    response = urllib2.urlopen(topology_url)
+    topology_data = json.load(response)
     return topology_data
 
 # Function to push data to Git repository
 def push_to_git(data):
     # Change directory to the repository
-    os.chdir('~/Desktop/SDN')
+    os.chdir('/home/b-abdul9071/Desktop/SDN')
 
     # Add new topology file
     with open('topology.json', 'w') as f:
         f.write(json.dumps(data))
 
     # Add, commit, and push changes
-    subprocess.run(['git', 'add', 'topology.json'], check=True)
-    subprocess.run(['git', 'commit', '-m', 'Added new network topology'], check=True)
-    subprocess.run(['git', 'push'], check=True)
+    subprocess.call(['git', 'add', 'topology.json'])
+    subprocess.call(['git', 'commit', '-m', 'Added new network topology'])
+    subprocess.call(['git', 'push'])
 
 if __name__ == '__main__':
     setLogLevel('info')
@@ -70,6 +70,9 @@ if __name__ == '__main__':
 
     # Push topology data to Git repository
     push_to_git(topology_data)
-
+    
+    # Success msg
+    print("Uploaded to git succesfully!")
+    
     # Stop Mininet
     net.stop()
